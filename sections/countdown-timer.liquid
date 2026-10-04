@@ -1,0 +1,301 @@
+{%- style -%}
+  .countdown-timer-section {
+    background-color: {{ section.settings.background_color }};
+    color: {{ section.settings.font_color }};
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    text-align: center;
+  }
+
+  @media screen and (min-width: 750px) {
+    .countdown-timer-section {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  .countdown-timer__title {
+    color: {{ section.settings.font_color }};
+    font-size: {{ section.settings.title_size }}px;
+    margin: 0 0 1.6rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .countdown-timer__display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .countdown-timer__unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 7rem;
+  }
+
+  .countdown-timer__number {
+    font-size: {{ section.settings.number_size }}px;
+    font-weight: 700;
+    line-height: 1;
+    display: block;
+    color: {{ section.settings.font_color }};
+    font-variant-numeric: tabular-nums;
+  }
+
+  .countdown-timer__label {
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.6rem;
+    opacity: 0.75;
+    color: {{ section.settings.font_color }};
+  }
+
+  .countdown-timer__separator {
+    font-size: {{ section.settings.number_size }}px;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 0.5;
+    color: {{ section.settings.font_color }};
+    margin-bottom: 2.2rem;
+  }
+
+  .countdown-timer__expired {
+    font-size: 2rem;
+    margin: 0;
+    color: {{ section.settings.font_color }};
+  }
+
+  @media screen and (max-width: 749px) {
+    .countdown-timer__unit {
+      min-width: 5.5rem;
+    }
+    .countdown-timer__number {
+      font-size: {{ section.settings.number_size | times: 0.65 | round: 0 }}px;
+    }
+    .countdown-timer__separator {
+      font-size: {{ section.settings.number_size | times: 0.65 | round: 0 }}px;
+    }
+    .countdown-timer__title {
+      font-size: {{ section.settings.title_size | times: 0.8 | round: 0 }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- if section.settings.enable_timer -%}
+  <div class="countdown-timer-section">
+    <div class="page-width">
+      {%- if section.settings.title != blank -%}
+        <p class="countdown-timer__title">{{ section.settings.title }}</p>
+      {%- endif -%}
+
+      <div class="countdown-timer__display" id="countdown-display-{{ section.id }}">
+        <div class="countdown-timer__unit">
+          <span class="countdown-timer__number" id="ct-days-{{ section.id }}">00</span>
+          <span class="countdown-timer__label">{{ section.settings.label_days }}</span>
+        </div>
+        <span class="countdown-timer__separator" aria-hidden="true">:</span>
+        <div class="countdown-timer__unit">
+          <span class="countdown-timer__number" id="ct-hours-{{ section.id }}">00</span>
+          <span class="countdown-timer__label">{{ section.settings.label_hours }}</span>
+        </div>
+        <span class="countdown-timer__separator" aria-hidden="true">:</span>
+        <div class="countdown-timer__unit">
+          <span class="countdown-timer__number" id="ct-minutes-{{ section.id }}">00</span>
+          <span class="countdown-timer__label">{{ section.settings.label_minutes }}</span>
+        </div>
+        <span class="countdown-timer__separator" aria-hidden="true">:</span>
+        <div class="countdown-timer__unit">
+          <span class="countdown-timer__number" id="ct-seconds-{{ section.id }}">00</span>
+          <span class="countdown-timer__label">{{ section.settings.label_seconds }}</span>
+        </div>
+      </div>
+
+      <p class="countdown-timer__expired" id="ct-expired-{{ section.id }}" style="display:none;">
+        {{ section.settings.expired_message }}
+      </p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var endDate = new Date("{{ section.settings.end_date }}T{{ section.settings.end_time }}:00");
+      var daysEl    = document.getElementById("ct-days-{{ section.id }}");
+      var hoursEl   = document.getElementById("ct-hours-{{ section.id }}");
+      var minutesEl = document.getElementById("ct-minutes-{{ section.id }}");
+      var secondsEl = document.getElementById("ct-seconds-{{ section.id }}");
+      var displayEl = document.getElementById("countdown-display-{{ section.id }}");
+      var expiredEl = document.getElementById("ct-expired-{{ section.id }}");
+
+      function pad(n) { return n < 10 ? "0" + n : String(n); }
+
+      function tick() {
+        var distance = endDate - Date.now();
+        if (distance <= 0) {
+          if (displayEl) displayEl.style.display = "none";
+          if (expiredEl) expiredEl.style.display = "block";
+          return;
+        }
+        var d = Math.floor(distance / 86400000);
+        var h = Math.floor((distance % 86400000) / 3600000);
+        var m = Math.floor((distance % 3600000) / 60000);
+        var s = Math.floor((distance % 60000) / 1000);
+        if (daysEl)    daysEl.textContent    = pad(d);
+        if (hoursEl)   hoursEl.textContent   = pad(h);
+        if (minutesEl) minutesEl.textContent = pad(m);
+        if (secondsEl) secondsEl.textContent = pad(s);
+      }
+
+      tick();
+      setInterval(tick, 1000);
+    })();
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Countdown Timer",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Timer Control"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_timer",
+      "label": "Enable Timer",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "end_date",
+      "label": "End Date",
+      "info": "Format: YYYY-MM-DD (e.g. 2026-12-31)",
+      "default": "2026-12-31"
+    },
+    {
+      "type": "text",
+      "id": "end_time",
+      "label": "End Time (24h format)",
+      "info": "Format: HH:MM (e.g. 23:59)",
+      "default": "23:59"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Sale Ends In"
+    },
+    {
+      "type": "text",
+      "id": "expired_message",
+      "label": "Expired Message",
+      "info": "Shown after the timer reaches zero.",
+      "default": "This offer has ended."
+    },
+    {
+      "type": "text",
+      "id": "label_days",
+      "label": "Days Label",
+      "default": "Days"
+    },
+    {
+      "type": "text",
+      "id": "label_hours",
+      "label": "Hours Label",
+      "default": "Hours"
+    },
+    {
+      "type": "text",
+      "id": "label_minutes",
+      "label": "Minutes Label",
+      "default": "Minutes"
+    },
+    {
+      "type": "text",
+      "id": "label_seconds",
+      "label": "Seconds Label",
+      "default": "Seconds"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "color",
+      "id": "font_color",
+      "label": "Font Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "number_size",
+      "min": 32,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Number Size",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 14,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading Size",
+      "default": 22
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Top",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Bottom",
+      "default": 32
+    }
+  ],
+  "presets": [
+    {
+      "name": "Countdown Timer"
+    }
+  ]
+}
+{% endschema %}
